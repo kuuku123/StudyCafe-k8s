@@ -1,0 +1,57 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: auth-service
+  namespace: studycafe
+  labels:
+    app: auth-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: auth-service
+  template:
+    metadata:
+      labels:
+        app: auth-service
+    spec:
+      containers:
+        - name: auth-service
+          image: kuuku123/auth-service:latest
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8084
+          command:
+            - java
+            - -jar
+            - -Djasypt.encryptor.password=$(JASYPT_ENCRYPTOR_PASSWORD)
+            - -Dspring.profiles.active=prod
+            - /app/auth-service.jar
+          env:
+            - name: JASYPT_ENCRYPTOR_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: jasypt-secret
+                  key: JASYPT_ENCRYPTOR_PASSWORD
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8084
+            initialDelaySeconds: 60
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 10
+          livenessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8084
+            initialDelaySeconds: 90
+            periodSeconds: 15
+            timeoutSeconds: 5
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "250m"
+            limits:
+              memory: "1Gi"
+              cpu: "1000m"
