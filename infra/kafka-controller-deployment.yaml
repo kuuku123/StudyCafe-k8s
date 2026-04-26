@@ -15,6 +15,7 @@ spec:
       labels:
         app: kafka-controller
     spec:
+      hostname: controller-1
       containers:
         - name: kafka-controller
           image: apache/kafka:latest
