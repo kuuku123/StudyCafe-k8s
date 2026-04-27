@@ -27,7 +27,7 @@ spec:
             - name: KAFKA_PROCESS_ROLES
               value: "broker"
             - name: KAFKA_LISTENERS
-              value: "PLAINTEXT://:9092,PLAINTEXT_INTERNAL://:9093"
+              value: "PLAINTEXT://:9092,PLAINTEXT_INTERNAL://:9093,CONTROLLER://:9094"
             - name: KAFKA_ADVERTISED_LISTENERS
               value: "PLAINTEXT://broker-1:9092,PLAINTEXT_INTERNAL://broker-1:9093"
             - name: KAFKA_INTER_BROKER_LISTENER_NAME
