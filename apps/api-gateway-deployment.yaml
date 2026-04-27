@@ -34,7 +34,7 @@ spec:
           livenessProbe:
             tcpSocket:
               port: 8083
-            initialDelaySeconds: 60
+            initialDelaySeconds: 180
             periodSeconds: 15
             timeoutSeconds: 5
           resources:

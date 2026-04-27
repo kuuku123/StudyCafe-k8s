@@ -48,7 +48,7 @@ spec:
                 - -u
                 - root
                 - -p1234
-            initialDelaySeconds: 30
+            initialDelaySeconds: 120
             periodSeconds: 10
             timeoutSeconds: 5
           livenessProbe:
@@ -61,7 +61,7 @@ spec:
                 - -u
                 - root
                 - -p1234
-            initialDelaySeconds: 60
+            initialDelaySeconds: 180
             periodSeconds: 15
             timeoutSeconds: 5
           resources:

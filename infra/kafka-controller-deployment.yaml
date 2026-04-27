@@ -34,6 +34,8 @@ spec:
               value: "1@controller-1:9093"
             - name: KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS
               value: "0"
+            - name: KAFKA_CLUSTER_ID
+              value: "DBwuQHeySamG6YAg1kmzcA"
           resources:
             requests:
               memory: "256Mi"

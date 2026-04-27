@@ -38,7 +38,7 @@ spec:
               command:
                 - redis-cli
                 - ping
-            initialDelaySeconds: 15
+            initialDelaySeconds: 180
             periodSeconds: 10
             timeoutSeconds: 5
           resources:

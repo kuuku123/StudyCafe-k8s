@@ -42,16 +42,19 @@ spec:
               value: "0"
             - name: KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR
               value: "1"
+            - name: KAFKA_CLUSTER_ID
+              value: "DBwuQHeySamG6YAg1kmzcA"
           readinessProbe:
             exec:
               command:
                 - /opt/kafka/bin/kafka-topics.sh
                 - --list
                 - --bootstrap-server
-                - localhost:9093
-            initialDelaySeconds: 30
-            periodSeconds: 10
-            timeoutSeconds: 5
+                - localhost:9092
+            initialDelaySeconds: 60
+            periodSeconds: 30
+            timeoutSeconds: 10
+            failureThreshold: 5
           resources:
             requests:
               memory: "512Mi"
