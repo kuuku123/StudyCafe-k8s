@@ -7,6 +7,8 @@ metadata:
     app: kafka-broker
 spec:
   replicas: 1
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       app: kafka-broker
@@ -27,7 +29,7 @@ spec:
             - name: KAFKA_PROCESS_ROLES
               value: "broker"
             - name: KAFKA_LISTENERS
-              value: "PLAINTEXT://:9092,PLAINTEXT_INTERNAL://:9093,CONTROLLER://:9094"
+              value: "PLAINTEXT://:9092,PLAINTEXT_INTERNAL://:9093"
             - name: KAFKA_ADVERTISED_LISTENERS
               value: "PLAINTEXT://broker-1:9092,PLAINTEXT_INTERNAL://broker-1:9093"
             - name: KAFKA_INTER_BROKER_LISTENER_NAME
@@ -42,19 +44,15 @@ spec:
               value: "0"
             - name: KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR
               value: "1"
-            - name: KAFKA_CLUSTER_ID
+            - name: CLUSTER_ID
               value: "DBwuQHeySamG6YAg1kmzcA"
           readinessProbe:
-            exec:
-              command:
-                - /opt/kafka/bin/kafka-topics.sh
-                - --list
-                - --bootstrap-server
-                - localhost:9092
-            initialDelaySeconds: 60
-            periodSeconds: 30
-            timeoutSeconds: 10
-            failureThreshold: 5
+            tcpSocket:
+              port: 9092
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
           resources:
             requests:
               memory: "512Mi"
