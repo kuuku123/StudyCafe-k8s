@@ -1,0 +1,7 @@
+apiVersion: apps.studycafe.io/v1
+kind: StudyCafe
+metadata:
+  name: my-cafe
+  namespace: default
+spec:
+  message: "Hello from the StudyCafe Operator!"
