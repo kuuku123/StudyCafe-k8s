@@ -46,6 +46,7 @@ type StudyCafeReconciler struct {
 // move the current state of the cluster closer to the desired state.
 func (r *StudyCafeReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	log := logf.FromContext(ctx)
+	log.Info("Starting reconciliation", "request", req.NamespacedName)
 
 	// 1. Fetch the StudyCafe instance
 	studycafe := &appsv1.StudyCafe{}
@@ -70,7 +71,7 @@ func (r *StudyCafeReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 	}
 
 	// 3. Create or Update the ConfigMap
-	_, err = controllerutil.CreateOrUpdate(ctx, r.Client, cm, func() error {
+	op, err := controllerutil.CreateOrUpdate(ctx, r.Client, cm, func() error {
 		if cm.Data == nil {
 			cm.Data = make(map[string]string)
 		}
@@ -84,6 +85,10 @@ func (r *StudyCafeReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 	if err != nil {
 		log.Error(err, "unable to create or update ConfigMap")
 		return ctrl.Result{}, err
+	}
+
+	if op != controllerutil.OperationResultNone {
+		log.Info("ConfigMap reconciled", "operation", op, "name", cm.Name)
 	}
 
 	log.Info("Successfully reconciled StudyCafe", "name", studycafe.Name)

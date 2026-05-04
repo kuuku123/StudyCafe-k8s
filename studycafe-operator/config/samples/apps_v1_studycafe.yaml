@@ -4,4 +4,4 @@ metadata:
   name: my-cafe
   namespace: default
 spec:
-  message: "Hello from the StudyCafe Operator!"
+  message:  "I love Go and Kubernetes!"
