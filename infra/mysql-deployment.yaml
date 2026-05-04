@@ -61,7 +61,7 @@ spec:
                 - -u
                 - root
                 - -p1234
-            initialDelaySeconds: 180
+            initialDelaySeconds: 300
             periodSeconds: 15
             timeoutSeconds: 5
           resources:
