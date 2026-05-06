@@ -2,6 +2,6 @@ apiVersion: apps.studycafe.io/v1
 kind: StudyCafe
 metadata:
   name: my-cafe
-  namespace: default
+  namespace: studycafe
 spec:
   message:  "I love Go and Kubernetes!"

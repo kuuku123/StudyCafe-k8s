@@ -33,6 +33,16 @@ type StudyCafeSpec struct {
 	// Message is the greeting message
 	// +optional
 	Message string `json:"message,omitempty"`
+
+	// Replicas defines the number of pods for each service
+	// +kubebuilder:default:=1
+	// +optional
+	Replicas int32 `json:"replicas,omitempty"`
+
+	// ImageTag defines the version of the images to use
+	// +kubebuilder:default:="latest"
+	// +optional
+	ImageTag string `json:"imageTag,omitempty"`
 }
 
 // StudyCafeStatus defines the observed state of StudyCafe.

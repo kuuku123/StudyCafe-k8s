@@ -19,6 +19,7 @@ package controller
 import (
 	"context"
 
+	appsv1k8s "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -28,7 +29,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 
-	appsv1 "github.com/kuuku123/studycafe-operator/api/v1"
+	studycafev1 "github.com/kuuku123/studycafe-operator/api/v1"
 )
 
 // StudyCafeReconciler reconciles a StudyCafe object
@@ -41,54 +42,80 @@ type StudyCafeReconciler struct {
 // +kubebuilder:rbac:groups=apps.studycafe.io,resources=studycafes/status,verbs=get;update;patch
 // +kubebuilder:rbac:groups=apps.studycafe.io,resources=studycafes/finalizers,verbs=update
 // +kubebuilder:rbac:groups="",resources=configmaps,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups="",resources=secrets,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups="",resources=persistentvolumeclaims,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=apps,resources=deployments,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups="",resources=services,verbs=get;list;watch;create;update;patch;delete
 
-// Reconcile is part of the main kubernetes reconciliation loop which aims to
-// move the current state of the cluster closer to the desired state.
+// Reconcile is part of the main kubernetes reconciliation loop
 func (r *StudyCafeReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	log := logf.FromContext(ctx)
 	log.Info("Starting reconciliation", "request", req.NamespacedName)
 
-	// 1. Fetch the StudyCafe instance
-	studycafe := &appsv1.StudyCafe{}
+	studycafe := &studycafev1.StudyCafe{}
 	err := r.Get(ctx, req.NamespacedName, studycafe)
 	if err != nil {
 		if errors.IsNotFound(err) {
-			// Request object not found, could have been deleted after reconcile request.
-			// Owned objects are automatically garbage collected. For additional cleanup logic use finalizers.
-			// Return and don't requeue
 			return ctrl.Result{}, nil
 		}
-		// Error reading the object - requeue the request.
 		return ctrl.Result{}, err
 	}
 
-	// 2. Define the desired ConfigMap
+	// 1. Reconcile Secrets first (from environment variables)
+	if err := r.reconcileSecrets(ctx, studycafe); err != nil {
+		log.Error(err, "Failed to reconcile Secrets")
+		return ctrl.Result{}, err
+	}
+
+	infras := getInfras()
+
+	for _, infra := range infras {
+		if infra.pvcName != "" {
+			if err := r.reconcilePVC(ctx, studycafe, infra.pvcName, infra.pvcSize); err != nil {
+				log.Error(err, "Failed to reconcile PVC", "PVC.Name", infra.pvcName)
+				return ctrl.Result{}, err
+			}
+		}
+		if err := r.reconcileInfraDeployment(ctx, studycafe, infra); err != nil {
+			log.Error(err, "Failed to reconcile Infra Deployment", "Deployment.Name", infra.name)
+			return ctrl.Result{}, err
+		}
+		if err := r.reconcileInfraService(ctx, studycafe, infra); err != nil {
+			log.Error(err, "Failed to reconcile Infra Service", "Service.Name", infra.name)
+			return ctrl.Result{}, err
+		}
+	}
+
+	apps := getApps()
+
+	for _, app := range apps {
+		if err := r.reconcileDeployment(ctx, studycafe, app); err != nil {
+			log.Error(err, "Failed to reconcile Deployment", "Deployment.Name", app.name)
+			return ctrl.Result{}, err
+		}
+		if err := r.reconcileService(ctx, studycafe, app.name, app.port); err != nil {
+			log.Error(err, "Failed to reconcile Service", "Service.Name", app.name)
+			return ctrl.Result{}, err
+		}
+	}
+
+	// Keep existing ConfigMap logic
 	cm := &corev1.ConfigMap{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      studycafe.Name + "-info",
 			Namespace: studycafe.Namespace,
 		},
 	}
-
-	// 3. Create or Update the ConfigMap
-	op, err := controllerutil.CreateOrUpdate(ctx, r.Client, cm, func() error {
+	_, err = controllerutil.CreateOrUpdate(ctx, r.Client, cm, func() error {
 		if cm.Data == nil {
 			cm.Data = make(map[string]string)
 		}
 		cm.Data["message"] = studycafe.Spec.Message
 		cm.Data["owner"] = studycafe.Name
-
-		// Set owner reference so it's deleted when StudyCafe is deleted
 		return controllerutil.SetControllerReference(studycafe, cm, r.Scheme)
 	})
-
 	if err != nil {
-		log.Error(err, "unable to create or update ConfigMap")
 		return ctrl.Result{}, err
-	}
-
-	if op != controllerutil.OperationResultNone {
-		log.Info("ConfigMap reconciled", "operation", op, "name", cm.Name)
 	}
 
 	log.Info("Successfully reconciled StudyCafe", "name", studycafe.Name)
@@ -98,8 +125,12 @@ func (r *StudyCafeReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 // SetupWithManager sets up the controller with the Manager.
 func (r *StudyCafeReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
-		For(&appsv1.StudyCafe{}).
+		For(&studycafev1.StudyCafe{}).
 		Owns(&corev1.ConfigMap{}).
+		Owns(&appsv1k8s.Deployment{}).
+		Owns(&corev1.Service{}).
+		Owns(&corev1.Secret{}).
+		Owns(&corev1.PersistentVolumeClaim{}).
 		Named("studycafe").
 		Complete(r)
 }

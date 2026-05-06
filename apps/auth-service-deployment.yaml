@@ -33,6 +33,11 @@ spec:
                 secretKeyRef:
                   name: jasypt-secret
                   key: JASYPT_ENCRYPTOR_PASSWORD
+            - name: JWT_PRIVATE_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: jwt-secret
+                  key: JWT_PRIVATE_KEY
           readinessProbe:
             httpGet:
               path: /actuator/health

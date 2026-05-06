@@ -41,9 +41,18 @@ spec:
           spec:
             description: spec defines the desired state of StudyCafe
             properties:
+              imageTag:
+                default: latest
+                description: ImageTag defines the version of the images to use
+                type: string
               message:
                 description: Message is the greeting message
                 type: string
+              replicas:
+                default: 1
+                description: Replicas defines the number of pods for each service
+                format: int32
+                type: integer
             type: object
           status:
             description: status defines the observed state of StudyCafe

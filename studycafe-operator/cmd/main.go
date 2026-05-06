@@ -21,6 +21,8 @@ import (
 	"flag"
 	"os"
 
+	"github.com/joho/godotenv"
+
 	// Import all Kubernetes client auth plugins (e.g. Azure, GCP, OIDC, etc.)
 	// to ensure that exec-entrypoint and run can make use of them.
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
@@ -84,6 +86,10 @@ func main() {
 	}
 	opts.BindFlags(flag.CommandLine)
 	flag.Parse()
+
+	if err := godotenv.Load(); err != nil {
+		setupLog.Info("No .env file found, relying on system environment variables")
+	}
 
 	ctrl.SetLogger(zap.New(zap.UseFlagOptions(&opts)))
 
