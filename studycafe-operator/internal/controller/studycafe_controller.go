@@ -21,6 +21,7 @@ import (
 
 	appsv1k8s "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
+	networkingv1 "k8s.io/api/networking/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -46,6 +47,7 @@ type StudyCafeReconciler struct {
 // +kubebuilder:rbac:groups="",resources=persistentvolumeclaims,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=apps,resources=deployments,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups="",resources=services,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=networking.k8s.io,resources=ingresses,verbs=get;list;watch;create;update;patch;delete
 
 // Reconcile is part of the main kubernetes reconciliation loop
 func (r *StudyCafeReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
@@ -99,6 +101,11 @@ func (r *StudyCafeReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 		}
 	}
 
+	if err := r.reconcileIngress(ctx, studycafe); err != nil {
+		log.Error(err, "Failed to reconcile Ingress")
+		return ctrl.Result{}, err
+	}
+
 	// Keep existing ConfigMap logic
 	cm := &corev1.ConfigMap{
 		ObjectMeta: metav1.ObjectMeta{
@@ -131,6 +138,7 @@ func (r *StudyCafeReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Owns(&corev1.Service{}).
 		Owns(&corev1.Secret{}).
 		Owns(&corev1.PersistentVolumeClaim{}).
+		Owns(&networkingv1.Ingress{}).
 		Named("studycafe").
 		Complete(r)
 }
