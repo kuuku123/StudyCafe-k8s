@@ -3,11 +3,22 @@
 # build-and-load.sh
 # Builds all Docker images locally and loads them into the Kind cluster.
 #
-# Usage: ./build-and-load.sh [--cluster-name <name>]
+# Usage: ./build-and-load.sh [--cluster-name <name>] [--env <env>]
 #
 set -euo pipefail
 
-CLUSTER_NAME="${1:-studycafe}"
+CLUSTER_NAME="studycafe"
+BUILD_ENV="kube"
+
+while [[ "$#" -gt 0 ]]; do
+    case $1 in
+        --cluster-name) CLUSTER_NAME="$2"; shift ;;
+        --env) BUILD_ENV="$2"; shift ;;
+        *) echo "Unknown parameter passed: $1"; exit 1 ;;
+    esac
+    shift
+done
+
 PROJECT_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 
 GREEN='\033[0;32m'
@@ -22,14 +33,14 @@ err()  { echo -e "${RED}[ERROR]${NC} $1"; }
 # ─────────────────────────────────────────────────
 # 1) React Frontend
 # ─────────────────────────────────────────────────
-log "━━━ Building React Frontend ━━━"
+log "━━━ Building React Frontend (Env: ${BUILD_ENV}) ━━━"
 cd "$PROJECT_ROOT/StudyCafe_React"
 log "Installing npm dependencies..."
 npm install
 log "Cleaning old build..."
 npm run clean || true
-log "Building production bundle..."
-npm run build
+log "Building bundle..."
+BUILD_ENV="${BUILD_ENV}" npm run build
 log "Building Docker image: kuuku123/react-apache-app:latest"
 docker build -t kuuku123/react-apache-app:latest .
 

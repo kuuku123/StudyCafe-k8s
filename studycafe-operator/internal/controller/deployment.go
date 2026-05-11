@@ -110,10 +110,14 @@ func (r *StudyCafeReconciler) reconcileDeployment(ctx context.Context, sc *study
 			})
 		}
 
-		if app.name == "api-gateway" || app.name == "notification-service" {
+		if app.name == "api-gateway" || app.name == "notification-service" || app.name == "auth-service" || app.name == "study-service" {
+			envVal := sc.Spec.Environment
+			if envVal == "" {
+				envVal = "kube"
+			}
 			container.Env = append(container.Env, corev1.EnvVar{
 				Name:  "SPRING_PROFILES_ACTIVE",
-				Value: "prod",
+				Value: envVal,
 			})
 		}
 

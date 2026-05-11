@@ -41,6 +41,11 @@ spec:
           spec:
             description: spec defines the desired state of StudyCafe
             properties:
+              environment:
+                default: dev
+                description: Environment specifies the active spring profile (e.g.,
+                  dev, prod)
+                type: string
               imageTag:
                 default: latest
                 description: ImageTag defines the version of the images to use

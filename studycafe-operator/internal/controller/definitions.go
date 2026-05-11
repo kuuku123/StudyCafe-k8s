@@ -167,7 +167,7 @@ func getApps() []appDef {
 			cpuRequest:    "250m",
 			memoryLimit:   "1Gi",
 			cpuLimit:      "1000m",
-			command:       []string{"java", "-jar", "-Djasypt.encryptor.password=$(JASYPT_ENCRYPTOR_PASSWORD)", "-Dspring.profiles.active=prod", "/app/auth-service.jar"},
+			command:       []string{"java", "-jar", "-Djasypt.encryptor.password=$(JASYPT_ENCRYPTOR_PASSWORD)", "/app/auth-service.jar"},
 		},
 		{
 			name:          "study-service",
@@ -181,7 +181,7 @@ func getApps() []appDef {
 			cpuRequest:    "250m",
 			memoryLimit:   "1Gi",
 			cpuLimit:      "1000m",
-			command:       []string{"java", "-jar", "-Djasypt.encryptor.password=$(JASYPT_ENCRYPTOR_PASSWORD)", "-Dspring.profiles.active=prod", "/app/study-service.jar"},
+			command:       []string{"java", "-jar", "-Djasypt.encryptor.password=$(JASYPT_ENCRYPTOR_PASSWORD)", "/app/study-service.jar"},
 		},
 		{
 			name:          "notification-service",

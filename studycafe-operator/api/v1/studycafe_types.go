@@ -43,6 +43,11 @@ type StudyCafeSpec struct {
 	// +kubebuilder:default:="latest"
 	// +optional
 	ImageTag string `json:"imageTag,omitempty"`
+
+	// Environment specifies the active spring profile (e.g., dev, kube, prod)
+	// +kubebuilder:default:="kube"
+	// +optional
+	Environment string `json:"environment,omitempty"`
 }
 
 // StudyCafeStatus defines the observed state of StudyCafe.

@@ -56,7 +56,7 @@ func (r *StudyCafeReconciler) reconcileIngress(ctx context.Context, studycafe *s
 		return err
 	}
 
-	// 2. API Gateway Ingress (HTTPS)
+	// 2. API Gateway Ingress (HTTP)
 	apiIngress := &networkingv1.Ingress{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      studycafe.Name + "-api-ingress",
@@ -72,8 +72,8 @@ func (r *StudyCafeReconciler) reconcileIngress(ctx context.Context, studycafe *s
 		if apiIngress.Annotations == nil {
 			apiIngress.Annotations = make(map[string]string)
 		}
-		// This annotation is required because api-gateway runs on HTTPS
-		apiIngress.Annotations["nginx.ingress.kubernetes.io/backend-protocol"] = "HTTPS"
+		// We use plain HTTP for internal traffic between Ingress and api-gateway, avoiding TLS mismatch
+		// apiIngress.Annotations["nginx.ingress.kubernetes.io/backend-protocol"] = "HTTPS"
 		apiIngress.Annotations["nginx.ingress.kubernetes.io/use-regex"] = "true"
 		apiIngress.Annotations["nginx.ingress.kubernetes.io/rewrite-target"] = "/$2"
 
